@@ -1,0 +1,31 @@
+#!/bin/sh
+# Copyright 2016 W. Trevor King <wking@tremily.us>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# usage: inotify-pub [DIRECTORY [EVENT]]
+#
+# Reads a message from stdin and writes it to a timestamped file under
+# DIRECTORY.  If EVENT is set, tag the event with that value.  If
+# EVENT is not set, tag the event with 'event'.
+
+DIRECTORY="${1:-.}"
+EVENT="${2:-event}"
+TMP_DIR="${DIRECTORY}/tmp"
+EVENT_DIR="${DIRECTORY}/events"
+
+DATE=$(TZ=UTC date --iso-8601=ns) &&
+mkdir -p "${TMP_DIR}" &&
+mkdir -p "${EVENT_DIR}" &&
+cat > "${TMP_DIR}/${DATE}_${EVENT}" &&  # ideally O_CREAT & O_EXCL
+mv --no-clobber "${TMP_DIR}/${DATE}_${EVENT}" "${EVENT_DIR}"  # ideally fail on conflict
