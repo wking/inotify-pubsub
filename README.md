@@ -150,21 +150,19 @@ collision](#filename-collision)
 * A POSIX-compliant [`echo`][echo.1p] (e.g. from [GNU
   Coreutils][coreutils]).
 * [`inotifywait`][inotifywait.1] from [inotify-tools][].
-* A POSIX-compliant [`kill`][kill.1p] (e.g. from [procps][]).
 * A POSIX-compliant [`mkdir`][mkdir.1p] (e.g. from [GNU
   Coreutils][coreutils]).
 * A POSIX-compliant [`mkfifo`][mkfifo.1p] (e.g. from [GNU
   Coreutils][coreutils]).
 * [`mv`][mv.1] from [GNU Coreutils][coreutils] (POSIX [does not
   specify `--no-clobber`][mv.1p].)
+* [`pkill`][pkill.1] from [procps][].
 * A POSIX-compliant [`printf`][printf.1p] (e.g. from [GNU
   Coreutils][coreutils]).
-* A POSIX-compliant [`ps`][ps.1p] (e.g. from [procps][]).
 * A POSIX-compliant [`read`][read.1p] (e.g. from your [shell's
   built-ins][regular-built-ins]).
 * A POSIX-compliant [`rm`][rm.1p] (e.g. from [GNU
   Coreutils][coreutils]).
-* A POSIX-compliant [`sed`][sed.1p] (e.g. from [GNU sed][sed]).
 * A POSIX-compliant [`sort`][sort.1p] (e.g. from [GNU
   Coreutils][coreutils]).
 * A POSIX-compliant [`test`][test.1p] (e.g. from [GNU
@@ -174,7 +172,6 @@ collision](#filename-collision)
 [inotify-tools]: https://github.com/rvoicilas/inotify-tools/wiki
 [NTP]: http://www.ntp.org/
 [procps]: https://gitlab.com/procps-ng/procps
-[sed]: https://www.gnu.org/software/sed/sed
 
 [execution-environment]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_12
 [regular-built-ins]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_01_01
@@ -184,17 +181,15 @@ collision](#filename-collision)
 [date.1p]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/date.html
 [echo.1p]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/echo.html
 [inotifywait.1]: http://man7.org/linux/man-pages/man1/inotifywait.1.html
-[kill.1p]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/kill.html
 [mv.1]: http://man7.org/linux/man-pages/man1/inotifywait.1.html
 [mkdir.1p]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/mkdir.html
 [mkfifo.1p]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/mkfifo.html
 [mv.1]: http://man7.org/linux/man-pages/man1/mv.1.html
 [mv.1p]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/mv.html
+[pkill.1]: http://man7.org/linux/man-pages/man1/pkill.1.html
 [printf.1p]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/printf.html
-[ps.1p]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/ps.html
 [read.1p]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/read.html
 [rm.1p]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/rm.html
-[sed.1p]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/sed.html
 [sh.1p]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/sh.html
 [sort.1p]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/sort.html
 [test.1p]: http://pubs.opengroup.org/onlinepubs/9699919799/utilities/test.html

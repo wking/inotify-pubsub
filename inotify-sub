@@ -48,15 +48,6 @@ less_than() {
 	return "${?}"
 }
 
-kill_inotifywait() {
-	INOTIFYWAIT_PID=$(
-		ps -o ppid -o comm -o pid | sed -n "s/^ *${$} *inotifywait *//p")
-	if test -n "${INOTIFYWAIT_PID}"
-	then
-		kill "${INOTIFYWAIT_PID}"
-	fi
-}
-
 while test -n "${1}"
 do
 	case "${1}" in
@@ -131,7 +122,7 @@ do
 				rm "${FIFO_DIR}/${DATE}" &&
 				if test -n "${LAST_OLD_EVENT}" -a "${MONITOR}" -eq 0
 				then
-					kill_inotifywait &&
+					pkill --parent "${$}" inotifywait &&
 					break
 				fi
 			fi
@@ -141,7 +132,7 @@ do
 	then
 		if show_matching_event "${FILENAME}" && test "${MONITOR}" -eq 0
 		then
-			kill_inotifywait &&
+			pkill --parent "${$}" inotifywait &&
 			break
 		fi
 	fi
