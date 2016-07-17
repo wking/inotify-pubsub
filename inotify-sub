@@ -13,26 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# usage: inotify-sub [DIRECTORY [EVENT]]
+# usage: inotify-sub [OPTIONS] [DIRECTORY]
 #
 # Subscribe to messages being published under DIRECTORY, printing
 # events to stdout as they are published.  If EVENT is set, only print
 # events matching that label.  If it is not set, print all events.
 
-DIRECTORY="${1:-.}"
-EVENT="${2}"
-FIFO_DIR="${DIRECTORY}/fifo"
-EVENT_DIR="${DIRECTORY}/events"
+EVENT=
+EVENT_DIR=
 WATCHING=0
 LAST_OLD_EVENT=
+MONITOR=0
+HISTORIC=0
 
 show_matching_event() {
 	FILENAME="${1}"
 	FILE_EVENT="${FILENAME#[^_]*_}"
 	if test -z "${EVENT}" -o "_${EVENT}" = "_${FILE_EVENT}"
 	then
-		cat "${EVENT_DIR}/${FILENAME}"
+		cat "${EVENT_DIR}/${FILENAME}" &&
+		return 0
 	fi
+	return 1
 }
 
 less_than() {
@@ -46,6 +48,58 @@ less_than() {
 	return "${?}"
 }
 
+kill_inotifywait() {
+	INOTIFYWAIT_PID=$(
+		ps -o ppid -o comm -o pid | sed -n "s/^ *${$} *inotifywait *//p")
+	if test -n "${INOTIFYWAIT_PID}"
+	then
+		kill "${INOTIFYWAIT_PID}"
+	fi
+}
+
+while test -n "${1}"
+do
+	case "${1}" in
+	-m|--monitor)
+		MONITOR=1
+		;;
+	-e|--event)
+		shift
+		EVENT="${1}"
+		;;
+	-H|--historic)
+		HISTORIC=1
+		;;
+	-*)
+		cat <<-EOF >&2
+			unrecognized argument: '${1}'
+
+			usage: inotify-sub [OPTIONS] [DIRECTORY]
+
+			Options:
+
+			-m, --monitor
+			  Instead of exiting after receiving a single event, execute
+			  indefinitely.  The default behavior is to exit after the first
+			  event occurs.
+
+			-e <event>, --event <event>
+			  Listen for specific events only.  If ommitted, all events are
+			  listened for.
+
+			-H, --historic
+			  Replay historic events.  If ommitted, only new events are
+			  output.
+		EOF
+		exit 1
+	esac
+	shift
+done
+
+DIRECTORY="${1:-.}"
+FIFO_DIR="${DIRECTORY}/fifo"
+EVENT_DIR="${DIRECTORY}/events"
+
 mkdir -p "${EVENT_DIR}" &&
 mkdir -p "${FIFO_DIR}" &&
 inotifywait -m -e moved_to --format '%f' "${EVENT_DIR}" 2>&1 |
@@ -56,23 +110,39 @@ do
 		if test 'Watches established.' = "${FILENAME}"
 		then
 			WATCHING=1
-			DATE=$(TZ=UTC date --iso-8601=ns) &&
-			mkfifo -m 0600 "${FIFO_DIR}/${DATE}"
-			ls "${EVENT_DIR}" | (
-				LAST_OLD_EVENT=
-				while read -r FNAME
-				do
-					show_matching_event "${FNAME}"
-					LAST_OLD_EVENT="${FNAME}"
-				done &&
-				echo "${LAST_OLD_EVENT}" >> "${FIFO_DIR}/${DATE}"
-			) &
-			LAST_OLD_EVENT=$(cat "${FIFO_DIR}/${DATE}") &&
-			wait &&
-			rm "${FIFO_DIR}/${DATE}"
+			if test "${HISTORIC}" -eq 1
+			then
+				DATE=$(TZ=UTC date --iso-8601=ns) &&
+				mkfifo -m 0600 "${FIFO_DIR}/${DATE}"
+				ls "${EVENT_DIR}" | (
+					LAST_OLD_EVENT=
+					while read -r FNAME
+					do
+						LAST_OLD_EVENT="${FNAME}"
+						if show_matching_event "${FNAME}" && test "${MONITOR}" -eq 0
+						then
+							break
+						fi
+					done &&
+					echo "${LAST_OLD_EVENT}" >> "${FIFO_DIR}/${DATE}"
+				) &
+				LAST_OLD_EVENT=$(cat "${FIFO_DIR}/${DATE}") &&
+				wait &&
+				rm "${FIFO_DIR}/${DATE}" &&
+				if test -n "${LAST_OLD_EVENT}" -a "${MONITOR}" -eq 0
+				then
+					kill_inotifywait &&
+					break
+				fi
+			fi
 		fi
-	elif less_than "${LAST_OLD_EVENT}" "${FILENAME}"
+	elif test -z "${LAST_OLD_EVENT}" ||
+		less_than "${LAST_OLD_EVENT}" "${FILENAME}"
 	then
-		show_matching_event "${FILENAME}"
+		if show_matching_event "${FILENAME}" && test "${MONITOR}" -eq 0
+		then
+			kill_inotifywait &&
+			break
+		fi
 	fi
 done
